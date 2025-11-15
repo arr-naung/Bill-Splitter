@@ -6,13 +6,25 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk" // Explicitly build an APK for Android development testing
+      }
+      // Removed "ios.buildType" from here as it's not allowed
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk" // Explicitly build an APK for Android preview/internal testing
+      }
+      // Removed "ios.buildType" from here as it's not allowed
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle" // Explicitly build an App Bundle for Android Play Store submission
+      }
+      // Removed "ios.buildType" from here as it's not allowed
     }
   },
   "submit": {

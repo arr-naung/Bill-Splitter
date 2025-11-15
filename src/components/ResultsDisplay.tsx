@@ -24,32 +24,32 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
   return (
     <View style={styles.mainResultCard}>
-      {/* Top Section: Per Person - Main Result */}
+      {/* Top Section: Tip Amount and Total Bill */}
       <View style={styles.topSection}>
-        <Text style={styles.mainLabel}>Per Person</Text>
-        <Text style={styles.mainAmount}>{formatCurrency(perPerson)}</Text>
-      </View>
-
-      {/* Divider */}
-      <View style={styles.divider} />
-
-      {/* Bottom Section: Tip and Total (Stacked) */}
-      <View style={styles.bottomSection}>
-        <View style={styles.bottomRow}>
-          <View style={styles.bottomItem}>
+        <View style={styles.topRow}>
+          <View style={styles.topItem}>
             <Text style={styles.secondaryLabel}>Tip Amount</Text>
             <Text style={styles.secondaryAmount}>
               {formatCurrency(tipAmount)}
             </Text>
           </View>
-          <View style={styles.bottomDivider} />
-          <View style={styles.bottomItem}>
+          <View style={styles.topDivider} />
+          <View style={styles.topItem}>
             <Text style={styles.secondaryLabel}>Total Bill</Text>
             <Text style={styles.secondaryAmount}>
               {formatCurrency(totalBill)}
             </Text>
           </View>
         </View>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.divider} />
+
+      {/* Bottom Section: Per Person - Main Result */}
+      <View style={styles.bottomSection}>
+        <Text style={styles.mainLabel}>Per Person</Text>
+        <Text style={styles.mainAmount}>{formatCurrency(perPerson)}</Text>
       </View>
     </View>
   );
@@ -67,10 +67,23 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   topSection: {
-    paddingVertical: 24,
+    paddingVertical: 16,
     paddingHorizontal: 20,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 16,
+  },
+  topItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  topDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   mainLabel: {
     fontSize: 12,
@@ -91,23 +104,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   bottomSection: {
-    paddingVertical: 16,
+    paddingVertical: 24,
     paddingHorizontal: 20,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
     alignItems: 'center',
-    gap: 16,
-  },
-  bottomItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  bottomDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
   },
   secondaryLabel: {
     fontSize: 10,

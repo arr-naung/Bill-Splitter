@@ -50,8 +50,9 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleSliderChange = (e: any) => {
-    const { locationX } = e.nativeEvent;
-    const sliderWidth = 280;
+    const { nativeEvent } = e;
+    const sliderWidth = nativeEvent.layout?.width || 280;
+    const locationX = nativeEvent.locationX || 0;
     const percentage = Math.min(
       Math.max(Math.round((locationX / sliderWidth) * 100), 0),
       100
@@ -225,6 +226,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 20,
     marginBottom: 8,
   },
   headerContent: {
@@ -332,13 +334,15 @@ const styles = StyleSheet.create({
   },
   quickTipsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
   quickTipButton: {
-    flex: 1,
+    width: '23%',
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 10,
     backgroundColor: Colors.surface,
     borderWidth: 1.5,
