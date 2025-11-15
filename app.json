@@ -1,18 +1,19 @@
 {
   "expo": {
-    "name": "TipSplitter",
-    "slug": "tip-splitter-app",
+    "name": "Bill Splitter",
+    "slug": "bill-splitter",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "tipsplitter",
+    "scheme": "billsplitter",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.arrnaung.billsplitter"
     },
     "android": {
-      "package": "com.arrnaung.tipsplitter",
+      "package": "com.arrnaung.billsplitter",
       "versionCode": 1,
       "adaptiveIcon": {},
       "edgeToEdgeEnabled": true,
