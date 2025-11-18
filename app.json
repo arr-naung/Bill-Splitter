@@ -48,6 +48,12 @@
         "projectId": "9e1fc4ce-f1b7-462b-a7d6-31180c4bff26"
       }
     },
-    "owner": "arr-naung"
+    "owner": "arr-naung",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/9e1fc4ce-f1b7-462b-a7d6-31180c4bff26"
+    }
   }
 }

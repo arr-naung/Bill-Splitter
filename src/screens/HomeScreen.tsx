@@ -4,17 +4,17 @@
  */
 
 import { MaterialIcons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { BillInput } from '../components/BillInput';
 import { PeopleCounter } from '../components/PeopleCounter';
@@ -27,6 +27,9 @@ export const HomeScreen: React.FC = () => {
   const [billAmount, setBillAmount] = useState<string>('');
   const [tipPercentage, setTipPercentage] = useState<number>(15);
   const [peopleCount, setPeopleCount] = useState<number>(1);
+  const [sliderWidth, setSliderWidth] = useState<number>(0);
+  const [sliderLeft, setSliderLeft] = useState<number>(0);
+  const sliderTrackRef = useRef<any>(null);
 
   // Memoized calculations
   const results = useMemo(() => {
@@ -50,14 +53,41 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleSliderChange = (e: any) => {
-    const { nativeEvent } = e;
-    const sliderWidth = nativeEvent.layout?.width || 280;
-    const locationX = nativeEvent.locationX || 0;
-    const percentage = Math.min(
-      Math.max(Math.round((locationX / sliderWidth) * 100), 0),
-      100
-    );
-    setTipPercentage(percentage);
+    // Use pageX and measured track left to calculate precise relative X
+    const pageX = e.nativeEvent.pageX;
+    const width = sliderWidth > 0 ? sliderWidth : 280; // fallback width
+
+    if (typeof pageX === 'number' && typeof sliderLeft === 'number') {
+      const relativeX = pageX - sliderLeft;
+      const clamped = Math.max(0, Math.min(relativeX, width));
+      const percentage = Math.min(Math.max(Math.round((clamped / width) * 100), 0), 100);
+      setTipPercentage(percentage);
+      return;
+    }
+
+    // Fallback to locationX if pageX or sliderLeft unavailable
+    const locationX = e.nativeEvent.locationX;
+    if (typeof locationX === 'number' && width > 0) {
+      const percentage = Math.min(Math.max(Math.round((locationX / width) * 100), 0), 100);
+      setTipPercentage(percentage);
+    }
+  };
+
+  const handleTrackLayout = (e: any) => {
+    const { width, x } = e.nativeEvent.layout;
+    setSliderWidth(width);
+    // Try to get absolute X on screen for pageX calculations
+    if (sliderTrackRef.current && sliderTrackRef.current.measureInWindow) {
+      try {
+        sliderTrackRef.current.measureInWindow((absX: number, _y: number, _w: number, _h: number) => {
+          setSliderLeft(absX);
+        });
+      } catch {
+        setSliderLeft(x || 0);
+      }
+    } else {
+      setSliderLeft(x || 0);
+    }
   };
 
   return (
@@ -115,23 +145,26 @@ export const HomeScreen: React.FC = () => {
                 </View>
               </View>
 
-              <View 
-                style={styles.sliderContainer}
-                onStartShouldSetResponder={() => true}
-                onResponderGrant={handleSliderChange}
-                onResponderMove={handleSliderChange}
-              >
-                <View style={styles.sliderTrack}>
-                  <View 
+              <View style={styles.sliderContainer}>
+                <View
+                  ref={sliderTrackRef}
+                  style={styles.sliderTrack}
+                  onLayout={handleTrackLayout}
+                  onStartShouldSetResponder={() => true}
+                  onResponderGrant={handleSliderChange}
+                  onResponderMove={handleSliderChange}
+                  onResponderRelease={() => {}}
+                >
+                  <View
                     style={[
-                      styles.sliderFill, 
-                      { width: `${(tipPercentage / 100) * 100}%` }
-                    ]} 
+                      styles.sliderFill,
+                      { width: `${(tipPercentage / 100) * 100}%` },
+                    ]}
                   />
-                  <View 
+                  <View
                     style={[
                       styles.sliderThumb,
-                      { left: `${(tipPercentage / 100) * 100}%` }
+                      { left: `${(tipPercentage / 100) * 100}%` },
                     ]}
                   />
                 </View>
@@ -287,11 +320,12 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     marginBottom: 16,
+    paddingVertical: 8,
   },
   sliderTrack: {
-    height: 12,
+    height: 14,
     backgroundColor: Colors.gray300,
-    borderRadius: 6,
+    borderRadius: 7,
     overflow: 'visible',
     marginBottom: 8,
     justifyContent: 'center',
@@ -303,19 +337,20 @@ const styles = StyleSheet.create({
   },
   sliderThumb: {
     position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: Colors.primary,
     borderWidth: 3,
     borderColor: Colors.white,
-    top: -6,
-    marginLeft: -12,
+    top: -7,
+    marginLeft: -14,
     shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
+    zIndex: 10,
   },
   sliderLabels: {
     flexDirection: 'row',
