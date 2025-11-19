@@ -16,23 +16,42 @@ import {
   View
 } from 'react-native';
 import { BillInput } from '../components/BillInput';
+import { ItemizedBillModal } from '../components/ItemizedBillModal';
 import { PeopleCounter } from '../components/PeopleCounter';
 import { ResultsDisplay } from '../components/ResultsDisplay';
 import { TipSelector } from '../components/TipSelector';
 import { Colors } from '../constants/Colors';
-import { calculateTip } from '../utils/Calculations';
+import { BillItem } from '../types';
+import { calculateItemizedSplit, calculateTip } from '../utils/Calculations';
 
 export const HomeScreen: React.FC = () => {
   // State Management
   const [billAmount, setBillAmount] = useState<string>('');
   const [tipPercentage, setTipPercentage] = useState<number>(15);
   const [peopleCount, setPeopleCount] = useState<number>(1);
+  const [peopleNames, setPeopleNames] = useState<Record<number, string>>({});
+
+  // Itemized Mode State
+  const [isItemizedMode, setIsItemizedMode] = useState(false);
+  const [items, setItems] = useState<BillItem[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Memoized calculations
   const results = useMemo(() => {
+    if (isItemizedMode) {
+      return calculateItemizedSplit(items, tipPercentage, peopleCount);
+    }
     const bill = parseFloat(billAmount) || 0;
     return calculateTip(bill, tipPercentage, peopleCount);
-  }, [billAmount, tipPercentage, peopleCount]);
+  }, [billAmount, tipPercentage, peopleCount, isItemizedMode, items]);
+
+  // Update bill amount when items change in itemized mode
+  React.useEffect(() => {
+    if (isItemizedMode) {
+      const total = items.reduce((sum, item) => sum + item.price, 0);
+      setBillAmount(total.toFixed(2));
+    }
+  }, [items, isItemizedMode]);
 
   // People Counter Handlers
   const handleIncrementPeople = () => {
@@ -40,6 +59,16 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleDecrementPeople = () => {
+    if (isItemizedMode) {
+      const maxAssigned = items.reduce((max, item) => {
+        const itemMax = Math.max(...item.assignedTo);
+        return Math.max(max, itemMax);
+      }, 0);
+
+      if (peopleCount <= maxAssigned) {
+        return;
+      }
+    }
     setPeopleCount((prev) => Math.max(prev - 1, 1));
   };
 
@@ -47,6 +76,29 @@ export const HomeScreen: React.FC = () => {
     setBillAmount('');
     setTipPercentage(15);
     setPeopleCount(1);
+    setItems([]);
+    setPeopleNames({});
+  };
+
+  const handleRenamePerson = (index: number, name: string) => {
+    setPeopleNames((prev) => ({
+      ...prev,
+      [index]: name,
+    }));
+  };
+
+  const handleAddItem = (name: string, price: number, assignedTo: number[]) => {
+    const newItem: BillItem = {
+      id: Date.now().toString(),
+      name,
+      price,
+      assignedTo,
+    };
+    setItems([...items, newItem]);
+  };
+
+  const handleDeleteItem = (id: string) => {
+    setItems(items.filter((item) => item.id !== id));
   };
 
 
@@ -75,13 +127,35 @@ export const HomeScreen: React.FC = () => {
           {/* Main Content */}
           <View style={styles.contentContainer}>
             {/* Bill Input Section with Reset Button */}
+            <View style={styles.modeToggleContainer}>
+              <Text style={styles.modeLabel}>Itemized Splitting</Text>
+              <TouchableOpacity
+                style={[styles.toggleSwitch, isItemizedMode && styles.toggleSwitchActive]}
+                onPress={() => setIsItemizedMode(!isItemizedMode)}
+              >
+                <View style={[styles.toggleThumb, isItemizedMode && styles.toggleThumbActive]} />
+              </TouchableOpacity>
+            </View>
+
             <View style={styles.billInputRow}>
               <View style={styles.billInputWrapper}>
-                <BillInput
-                  value={billAmount}
-                  onChangeText={setBillAmount}
-                  placeholder="100.00"
-                />
+                {isItemizedMode ? (
+                  <TouchableOpacity
+                    style={styles.editItemsButton}
+                    onPress={() => setModalVisible(true)}
+                  >
+                    <Text style={styles.editItemsText}>
+                      {items.length} Items (Tap to Edit)
+                    </Text>
+                    <Text style={styles.editItemsTotal}>${billAmount || '0.00'}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <BillInput
+                    value={billAmount}
+                    onChangeText={setBillAmount}
+                    placeholder="100.00"
+                  />
+                )}
               </View>
             </View>
 
@@ -100,10 +174,28 @@ export const HomeScreen: React.FC = () => {
 
             {/* Results Display Section */}
             <View style={styles.resultsSection}>
-              <ResultsDisplay
-                tipAmount={results.tipAmount}
-                totalBill={results.totalBill}
-                perPerson={results.perPerson}
+              {/* Results Display Section */}
+              <View style={styles.resultsSection}>
+                <ResultsDisplay
+                  billAmount={parseFloat(billAmount) || 0}
+                  tipAmount={results.tipAmount}
+                  totalBill={results.totalBill}
+                  perPerson={'perPerson' in results ? results.perPerson : 0}
+                  itemizedResults={'results' in results ? results.results : undefined}
+                  peopleNames={peopleNames}
+                />
+              </View>
+
+              <ItemizedBillModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                items={items}
+                onAddItem={handleAddItem}
+                onDeleteItem={handleDeleteItem}
+                peopleCount={peopleCount}
+                onIncrementPeople={handleIncrementPeople}
+                peopleNames={peopleNames}
+                onRenamePerson={handleRenamePerson}
               />
             </View>
 
@@ -171,6 +263,63 @@ const styles = StyleSheet.create({
   },
   headerTextContainer: {
     flex: 1,
+  },
+
+  modeToggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: Colors.surface,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.gray200,
+  },
+  modeLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  toggleSwitch: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: Colors.gray300,
+    padding: 2,
+  },
+  toggleSwitchActive: {
+    backgroundColor: Colors.primary,
+  },
+  toggleThumb: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: Colors.white,
+  },
+  toggleThumbActive: {
+    alignSelf: 'flex-end',
+  },
+  editItemsButton: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 80,
+  },
+  editItemsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.primary,
+    marginBottom: 4,
+  },
+  editItemsTotal: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
   billInputRow: {
     flexDirection: 'row',

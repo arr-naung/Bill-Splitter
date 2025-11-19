@@ -7,7 +7,10 @@ export interface CalculationResult {
   tipAmount: number;
   totalBill: number;
   perPerson: number;
+  itemizedResults?: import('../types').PersonResult[];
 }
+
+import { BillItem, PersonResult } from '../types';
 
 /**
  * Calculate tip, total bill, and per-person amount
@@ -62,4 +65,66 @@ export const calculateTipAmount = (bill: number, percentage: number): string => 
   return formatCurrency(tipAmount);
 };
 
-export default { calculateTip, formatCurrency, calculateTipAmount };
+/**
+ * Calculate split based on itemized list
+ * @param items - List of bill items
+ * @param percentage - Tip percentage
+ * @param peopleCount - Total number of people
+ */
+export const calculateItemizedSplit = (
+  items: BillItem[],
+  percentage: number,
+  peopleCount: number
+): { totalBill: number; tipAmount: number; results: PersonResult[] } => {
+  const results: PersonResult[] = [];
+  let totalBill = 0;
+
+  // Initialize results for each person
+  for (let i = 1; i <= peopleCount; i++) {
+    results.push({
+      personIndex: i,
+      baseAmount: 0,
+      tipAmount: 0,
+      totalAmount: 0,
+      items: [],
+    });
+  }
+
+  // Distribute items
+  items.forEach((item) => {
+    totalBill += item.price;
+    const splitCount = item.assignedTo.length;
+    if (splitCount > 0) {
+      const pricePerPerson = item.price / splitCount;
+      item.assignedTo.forEach((personIndex) => {
+        // Ensure person exists (in case people count was reduced)
+        if (personIndex <= peopleCount) {
+          const personResult = results[personIndex - 1];
+          personResult.baseAmount += pricePerPerson;
+          personResult.items.push(item);
+        }
+      });
+    }
+  });
+
+  // Calculate tips and totals
+  results.forEach((person) => {
+    person.tipAmount = (person.baseAmount * percentage) / 100;
+    person.totalAmount = person.baseAmount + person.tipAmount;
+  });
+
+  const totalTip = (totalBill * percentage) / 100;
+
+  return {
+    totalBill,
+    tipAmount: totalTip,
+    results,
+  };
+};
+
+export default {
+  calculateTip,
+  formatCurrency,
+  calculateTipAmount,
+  calculateItemizedSplit,
+};

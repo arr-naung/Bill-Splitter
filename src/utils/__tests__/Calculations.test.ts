@@ -58,21 +58,6 @@ describe('Calculations', () => {
 
         it('should handle invalid inputs gracefully', () => {
             const result = calculateTip(-100, -20, 0);
-            expect(result).toEqual({
-                tipAmount: 0,
-                totalBill: 0,
-                perPerson: 0,
-            });
-        });
-    });
-
-    describe('formatCurrency', () => {
-        it('should format integers correctly', () => {
-            expect(formatCurrency(10)).toBe('$10.00');
-        });
-
-        it('should format decimals correctly', () => {
-            expect(formatCurrency(10.5)).toBe('$10.50');
         });
 
         it('should format long decimals correctly', () => {

@@ -6,36 +6,47 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Colors } from '../constants/Colors';
+import { PersonResult } from '../types';
+import { formatCurrency } from '../utils/Calculations';
 
 interface ResultsDisplayProps {
+  billAmount: number;
   tipAmount: number;
   totalBill: number;
-  perPerson: number;
+  perPerson?: number;
+  itemizedResults?: PersonResult[];
+  peopleNames?: Record<number, string>;
 }
 
 export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
+  billAmount,
   tipAmount,
   totalBill,
-  perPerson,
+  perPerson = 0,
+  itemizedResults,
+  peopleNames = {},
 }) => {
-  const formatCurrency = (amount: number): string => {
-    return `$${amount.toFixed(2)}`;
-  };
-
   return (
     <View style={styles.mainResultCard}>
-      {/* Top Section: Tip Amount and Total Bill */}
+      {/* Top Section: Bill, Tip, and Total */}
       <View style={styles.topSection}>
         <View style={styles.topRow}>
           <View style={styles.topItem}>
-            <Text style={styles.secondaryLabel}>Tip Amount</Text>
+            <Text style={styles.secondaryLabel}>Bill</Text>
+            <Text style={styles.secondaryAmount}>
+              {formatCurrency(billAmount)}
+            </Text>
+          </View>
+          <View style={styles.topDivider} />
+          <View style={styles.topItem}>
+            <Text style={styles.secondaryLabel}>Tip</Text>
             <Text style={styles.secondaryAmount}>
               {formatCurrency(tipAmount)}
             </Text>
           </View>
           <View style={styles.topDivider} />
           <View style={styles.topItem}>
-            <Text style={styles.secondaryLabel}>Total Bill</Text>
+            <Text style={styles.secondaryLabel}>Total</Text>
             <Text style={styles.secondaryAmount}>
               {formatCurrency(totalBill)}
             </Text>
@@ -47,10 +58,26 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       <View style={styles.divider} />
 
       {/* Bottom Section: Per Person - Main Result */}
-      <View style={styles.bottomSection}>
-        <Text style={styles.mainLabel}>Per Person</Text>
-        <Text style={styles.mainAmount}>{formatCurrency(perPerson)}</Text>
-      </View>
+      {itemizedResults && itemizedResults.length > 0 ? (
+        <View style={styles.itemizedList}>
+          <Text style={styles.itemizedTitle}>Breakdown</Text>
+          {itemizedResults.map((person) => (
+            <View key={person.personIndex} style={styles.itemizedRow}>
+              <Text style={styles.itemizedLabel}>
+                {peopleNames[person.personIndex] || `Person ${person.personIndex}`}
+              </Text>
+              <Text style={styles.itemizedAmount}>
+                {formatCurrency(person.totalAmount)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.bottomSection}>
+          <Text style={styles.mainLabel}>Per Person</Text>
+          <Text style={styles.mainAmount}>{formatCurrency(perPerson)}</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -123,5 +150,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.white,
   },
+  itemizedList: {
+    padding: 20,
+  },
+  itemizedTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.white,
+    opacity: 0.9,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+  },
+  itemizedRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  itemizedLabel: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  itemizedAmount: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '700',
+  },
 });
-
