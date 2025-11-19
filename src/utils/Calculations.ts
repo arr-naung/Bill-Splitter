@@ -116,7 +116,7 @@ export const calculateItemizedSplit = (
   const totalTip = (totalBill * percentage) / 100;
 
   return {
-    totalBill,
+    totalBill: totalBill + totalTip,
     tipAmount: totalTip,
     results,
   };

@@ -1,7 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
+    Alert,
     Modal,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -21,6 +23,7 @@ interface ItemizedBillModalProps {
     onAddItem: (name: string, price: number, assignedTo: number[]) => void;
     onEditItem: (id: string, name: string, price: number, assignedTo: number[]) => void;
     onDeleteItem: (id: string) => void;
+    onClearItems: () => void;
     peopleCount: number;
     onIncrementPeople: () => void;
     onDecrementPeople: () => void;
@@ -36,6 +39,7 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
     onAddItem,
     onEditItem,
     onDeleteItem,
+    onClearItems,
     peopleCount,
     onIncrementPeople,
     onDecrementPeople,
@@ -121,13 +125,35 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <View>
-                                <Text style={styles.modalTitle}>Edit Items</Text>
+                            <Text style={styles.modalTitle}>Edit Items</Text>
+                            <View style={styles.headerRight}>
                                 <Text style={styles.modalSubtitle}>Total: {formatCurrency(totalAmount)}</Text>
+                                <View style={styles.headerButtons}>
+                                    {items.length > 0 && (
+                                        <TouchableOpacity onPress={() => {
+                                            if (Platform.OS === 'web') {
+                                                if (window.confirm('Are you sure you want to clear all items? This cannot be undone.')) {
+                                                    onClearItems();
+                                                }
+                                            } else {
+                                                Alert.alert(
+                                                    'Clear All Items',
+                                                    'Are you sure you want to clear all items? This cannot be undone.',
+                                                    [
+                                                        { text: 'Cancel', style: 'cancel' },
+                                                        { text: 'Clear', style: 'destructive', onPress: onClearItems },
+                                                    ]
+                                                );
+                                            }
+                                        }} style={styles.clearButton}>
+                                            <MaterialIcons name="refresh" size={24} color={Colors.primary} />
+                                        </TouchableOpacity>
+                                    )}
+                                    <TouchableOpacity onPress={onClose} style={styles.doneButton}>
+                                        <Text style={styles.doneButtonText}>Done</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                            <TouchableOpacity onPress={onClose} style={styles.doneButton}>
-                                <Text style={styles.doneButtonText}>Done</Text>
-                            </TouchableOpacity>
                         </View>
 
                         <ScrollView style={styles.itemsList}>
@@ -244,36 +270,36 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                         </View>
                     </View>
                 </View>
+            </Modal>
 
-                {/* Rename Modal */}
-                <Modal visible={renameModalVisible} transparent animationType="fade">
-                    <View style={styles.renameModalOverlay}>
-                        <View style={styles.renameModalContent}>
-                            <Text style={styles.renameTitle}>Rename Person</Text>
-                            <TextInput
-                                style={styles.renameInput}
-                                value={tempName}
-                                onChangeText={setTempName}
-                                placeholder="Enter name"
-                                autoFocus
-                            />
-                            <View style={styles.renameButtons}>
-                                <TouchableOpacity
-                                    style={[styles.renameButton, styles.cancelButton]}
-                                    onPress={() => setRenameModalVisible(false)}
-                                >
-                                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.renameButton, styles.saveButton]}
-                                    onPress={handleSaveName}
-                                >
-                                    <Text style={styles.saveButtonText}>Save</Text>
-                                </TouchableOpacity>
-                            </View>
+            {/* Rename Modal */}
+            <Modal visible={renameModalVisible} transparent animationType="fade">
+                <View style={styles.renameModalOverlay}>
+                    <View style={styles.renameModalContent}>
+                        <Text style={styles.renameTitle}>Rename Person</Text>
+                        <TextInput
+                            style={styles.renameInput}
+                            value={tempName}
+                            onChangeText={setTempName}
+                            placeholder="Enter name"
+                            autoFocus
+                        />
+                        <View style={styles.renameButtons}>
+                            <TouchableOpacity
+                                style={[styles.renameButton, styles.cancelButton]}
+                                onPress={() => setRenameModalVisible(false)}
+                            >
+                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.renameButton, styles.saveButton]}
+                                onPress={handleSaveName}
+                            >
+                                <Text style={styles.saveButtonText}>Save</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
-                </Modal>
+                </View>
             </Modal>
 
             {/* Manage Names Modal */}
@@ -344,9 +370,9 @@ const styles = StyleSheet.create({
         color: Colors.textPrimary,
     },
     modalSubtitle: {
-        fontSize: 14,
-        color: Colors.textSecondary,
-        marginTop: 4,
+        fontSize: 16,
+        fontWeight: '600',
+        color: Colors.primary,
     },
     doneButton: {
         padding: 8,
@@ -355,6 +381,19 @@ const styles = StyleSheet.create({
         color: Colors.primary,
         fontSize: 16,
         fontWeight: '600',
+    },
+    headerButtons: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    clearButton: {
+        padding: 8,
     },
     itemsList: {
         flex: 1,

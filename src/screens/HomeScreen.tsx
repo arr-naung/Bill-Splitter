@@ -6,6 +6,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -73,11 +74,38 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleReset = () => {
-    setBillAmount('');
-    setTipPercentage(15);
-    setPeopleCount(1);
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to reset everything? This will clear all items and people.')) {
+        setBillAmount('');
+        setTipPercentage(15);
+        setPeopleCount(1);
+        setItems([]);
+        setPeopleNames({});
+      }
+    } else {
+      Alert.alert(
+        'Reset All',
+        'Are you sure you want to reset everything? This will clear all items and people.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Reset',
+            style: 'destructive',
+            onPress: () => {
+              setBillAmount('');
+              setTipPercentage(15);
+              setPeopleCount(1);
+              setItems([]);
+              setPeopleNames({});
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const handleClearItems = () => {
     setItems([]);
-    setPeopleNames({});
   };
 
   const handleRenamePerson = (index: number, name: string) => {
@@ -226,6 +254,7 @@ export const HomeScreen: React.FC = () => {
                 onAddItem={handleAddItem}
                 onEditItem={handleEditItem}
                 onDeleteItem={handleDeleteItem}
+                onClearItems={handleClearItems}
                 peopleCount={peopleCount}
                 onIncrementPeople={handleIncrementPeople}
                 onDecrementPeople={handleDecrementPeople}
