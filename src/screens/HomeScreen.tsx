@@ -21,6 +21,7 @@ import { BillInput } from '../components/BillInput';
 import { ItemizedBillModal } from '../components/ItemizedBillModal';
 import { PeopleCounter } from '../components/PeopleCounter';
 import { ResultsDisplay } from '../components/ResultsDisplay';
+import { SubscriptionModal } from '../components/SubscriptionModal';
 import { TipSelector } from '../components/TipSelector';
 import { Colors } from '../constants/Colors';
 import { BillItem } from '../types';
@@ -37,6 +38,7 @@ export const HomeScreen: React.FC = () => {
   const [isItemizedMode, setIsItemizedMode] = useState(false);
   const [items, setItems] = useState<BillItem[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [subscriptionModalVisible, setSubscriptionModalVisible] = useState(false);
 
   // Memoized calculations
   const results = useMemo(() => {
@@ -176,15 +178,24 @@ export const HomeScreen: React.FC = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header with Reset Button */}
           <View style={styles.headerTop}>
             <View style={styles.headerTextContainer}>
               <Text style={styles.headerTitle}>Bill Splitter</Text>
               <Text style={styles.headerSubtitle}>Split bills fairly together</Text>
             </View>
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset} activeOpacity={0.7}>
-              <MaterialIcons name="refresh" size={28} color={Colors.primary} />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                style={styles.proButton}
+                onPress={() => setSubscriptionModalVisible(true)}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="workspace-premium" size={24} color="#FFD700" />
+                <Text style={styles.proButtonText}>PRO</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.resetButton} onPress={handleReset} activeOpacity={0.7}>
+                <MaterialIcons name="refresh" size={28} color={Colors.primary} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Main Content */}
@@ -274,7 +285,13 @@ export const HomeScreen: React.FC = () => {
               onDecrementPeople={handleDecrementPeople}
               onDeletePerson={handleDeletePerson}
               peopleNames={peopleNames}
+              peopleNames={peopleNames}
               onRenamePerson={handleRenamePerson}
+            />
+
+            <SubscriptionModal
+              visible={subscriptionModalVisible}
+              onClose={() => setSubscriptionModalVisible(false)}
             />
           </View>
         </ScrollView>
@@ -410,7 +427,26 @@ const styles = StyleSheet.create({
     padding: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 12,
+    marginLeft: 8,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  proButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.gray900,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 4,
+  },
+  proButtonText: {
+    color: '#FFD700',
+    fontWeight: '800',
+    fontSize: 12,
+    letterSpacing: 0.5,
   },
   contentContainer: {
     flex: 1,
