@@ -128,36 +128,40 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                     style={styles.modalOverlay}
                 >
                     <View style={styles.modalContent}>
+                        {/* Header Row: Title, Reset, Done */}
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Edit Items</Text>
-                            <View style={styles.headerRight}>
-                                <View style={styles.headerButtons}>
-                                    {items.length > 0 && (
-                                        <TouchableOpacity onPress={() => {
-                                            if (Platform.OS === 'web') {
-                                                if (window.confirm('Are you sure you want to clear all items? This cannot be undone.')) {
-                                                    onClearItems();
-                                                }
-                                            } else {
-                                                Alert.alert(
-                                                    'Clear All Items',
-                                                    'Are you sure you want to clear all items? This cannot be undone.',
-                                                    [
-                                                        { text: 'Cancel', style: 'cancel' },
-                                                        { text: 'Clear', style: 'destructive', onPress: onClearItems },
-                                                    ]
-                                                );
+                            <View style={styles.headerButtons}>
+                                {items.length > 0 && (
+                                    <TouchableOpacity onPress={() => {
+                                        if (Platform.OS === 'web') {
+                                            if (window.confirm('Are you sure you want to clear all items? This cannot be undone.')) {
+                                                onClearItems();
                                             }
-                                        }} style={styles.clearButton}>
-                                            <MaterialIcons name="refresh" size={24} color={Colors.primary} />
-                                        </TouchableOpacity>
-                                    )}
-                                    <TouchableOpacity onPress={onClose} style={styles.doneButton}>
-                                        <Text style={styles.doneButtonText}>Done</Text>
+                                        } else {
+                                            Alert.alert(
+                                                'Clear All Items',
+                                                'Are you sure you want to clear all items? This cannot be undone.',
+                                                [
+                                                    { text: 'Cancel', style: 'cancel' },
+                                                    { text: 'Clear', style: 'destructive', onPress: onClearItems },
+                                                ]
+                                            );
+                                        }
+                                    }} style={styles.clearButton}>
+                                        <MaterialIcons name="refresh" size={22} color={Colors.primary} />
                                     </TouchableOpacity>
-                                </View>
-                                <Text style={styles.modalSubtitle}>Total: {formatCurrency(totalAmount)}</Text>
+                                )}
+                                <TouchableOpacity onPress={onClose} style={styles.doneButton}>
+                                    <Text style={styles.doneButtonText}>Done</Text>
+                                </TouchableOpacity>
                             </View>
+                        </View>
+
+                        {/* Total Row */}
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Total:</Text>
+                            <Text style={styles.totalAmount}>{formatCurrency(totalAmount)}</Text>
                         </View>
 
                         <ScrollView
@@ -170,21 +174,25 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                 <Text style={styles.emptyText}>No items added yet.</Text>
                             ) : (
                                 items.map((item) => (
-                                    <View key={item.id} style={styles.itemRow}>
-                                        <View style={styles.itemInfo}>
-                                            <Text style={styles.itemName}>{item.name}</Text>
-                                            <Text style={styles.itemAssigned}>
-                                                Assigned to: {item.assignedTo.map(i => peopleNames[i] || `Person ${i}`).join(', ')}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.itemRight}>
-                                            <Text style={styles.itemPrice}>{formatCurrency(item.price)}</Text>
-                                            <TouchableOpacity onPress={() => handleStartEdit(item)}>
-                                                <MaterialIcons name="edit" size={24} color={Colors.primary} />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => onDeleteItem(item.id)}>
-                                                <MaterialIcons name="delete-outline" size={24} color={Colors.danger} />
-                                            </TouchableOpacity>
+                                    <View key={item.id} style={styles.itemCard}>
+                                        <View style={styles.itemRow}>
+                                            <View style={styles.itemInfo}>
+                                                <Text style={styles.itemName}>{item.name}</Text>
+                                                <Text style={styles.itemAssigned}>
+                                                    {item.assignedTo.map(i => peopleNames[i] || `Person ${i}`).join(', ')}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.itemRight}>
+                                                <Text style={styles.itemPrice}>{formatCurrency(item.price)}</Text>
+                                                <View style={styles.itemActions}>
+                                                    <TouchableOpacity onPress={() => handleStartEdit(item)} style={styles.actionButton}>
+                                                        <MaterialIcons name="edit" size={20} color={Colors.primary} />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity onPress={() => onDeleteItem(item.id)} style={styles.actionButton}>
+                                                        <MaterialIcons name="delete-outline" size={20} color={Colors.danger} />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
                                         </View>
                                     </View>
                                 ))
@@ -200,22 +208,33 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                         </TouchableOpacity>
                                     )}
                                 </View>
-                                <View style={styles.inputRow}>
+
+                                {/* Item Name Input with Label */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Item Name</Text>
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Item Name (e.g. Pizza)"
+                                        placeholder="e.g. Pizza, Drinks, Uber"
                                         value={newItemName}
                                         onChangeText={setNewItemName}
                                         placeholderTextColor="#999"
                                     />
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Price"
-                                        value={newItemPrice}
-                                        onChangeText={setNewItemPrice}
-                                        keyboardType="decimal-pad"
-                                        placeholderTextColor="#999"
-                                    />
+                                </View>
+
+                                {/* Price Input with Label and $ Symbol */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Price</Text>
+                                    <View style={styles.priceInputContainer}>
+                                        <Text style={styles.currencySymbol}>$</Text>
+                                        <TextInput
+                                            style={styles.priceInput}
+                                            placeholder="0.00"
+                                            value={newItemPrice}
+                                            onChangeText={setNewItemPrice}
+                                            keyboardType="decimal-pad"
+                                            placeholderTextColor="#999"
+                                        />
+                                    </View>
                                 </View>
 
                                 <View style={styles.assignHeader}>
@@ -375,35 +394,47 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 12,
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: '700',
         color: Colors.textPrimary,
     },
-    modalSubtitle: {
-        fontSize: 16,
+    totalRow: {
+        backgroundColor: Colors.gray100,
+        padding: 12,
+        borderRadius: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    totalLabel: {
+        fontSize: 14,
         fontWeight: '600',
+        color: Colors.textSecondary,
+    },
+    totalAmount: {
+        fontSize: 18,
+        fontWeight: '700',
         color: Colors.success,
-    },
-    doneButton: {
-        padding: 8,
-    },
-    doneButtonText: {
-        color: Colors.primary,
-        fontSize: 16,
-        fontWeight: '600',
     },
     headerButtons: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 12,
     },
-    headerRight: {
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        gap: 4,
+    doneButton: {
+        backgroundColor: Colors.primary,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+    },
+    doneButtonText: {
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: '600',
     },
     clearButton: {
         padding: 8,
@@ -420,13 +451,21 @@ const styles = StyleSheet.create({
         color: Colors.textSecondary,
         marginTop: 40,
     },
+    itemCard: {
+        backgroundColor: Colors.surface,
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 1,
+    },
     itemRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: Colors.gray200,
     },
     itemInfo: {
         flex: 1,
@@ -450,6 +489,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: Colors.primary,
+        marginRight: 8,
+    },
+    itemActions: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    actionButton: {
+        padding: 8,
+        borderRadius: 8,
+        backgroundColor: Colors.gray100,
     },
     addItemSection: {
         marginTop: 20,
@@ -484,7 +533,37 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Colors.gray300,
         borderRadius: 8,
-        padding: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        fontSize: 16,
+    },
+    inputGroup: {
+        marginBottom: 16,
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: Colors.textPrimary,
+        marginBottom: 8,
+    },
+    priceInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: Colors.surface,
+        borderWidth: 1,
+        borderColor: Colors.gray300,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+    },
+    currencySymbol: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: Colors.textPrimary,
+        marginRight: 4,
+    },
+    priceInput: {
+        flex: 1,
+        paddingVertical: 10,
         fontSize: 16,
     },
     assignLabel: {
@@ -516,6 +595,7 @@ const styles = StyleSheet.create({
     peopleSelectionRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginTop: 6,
         marginBottom: 16,
         gap: 8,
     },
@@ -525,24 +605,28 @@ const styles = StyleSheet.create({
     peopleSelectorContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 8,
+        gap: 6,
     },
     personChip: {
-        paddingHorizontal: 12,
+        paddingHorizontal: 10,
         paddingVertical: 6,
-        borderRadius: 16,
+        borderRadius: 8,
         backgroundColor: Colors.surface,
         borderWidth: 1,
         borderColor: Colors.gray300,
-        // Remove marginRight as we use gap in container
+        minWidth: 48,
+        minHeight: 36,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     personChipSelected: {
         backgroundColor: Colors.primary,
         borderColor: Colors.primary,
     },
     personChipText: {
-        fontSize: 14,
-        color: Colors.textPrimary,
+        fontSize: 15,
+        fontWeight: '600',
+        color: Colors.textSecondary,
     },
     personChipTextSelected: {
         color: Colors.white,
