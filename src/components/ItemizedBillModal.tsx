@@ -107,6 +107,14 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
         }
     };
 
+    const toggleSelectAll = () => {
+        if (selectedPeople.length === peopleCount) {
+            setSelectedPeople([]);
+        } else {
+            setSelectedPeople(Array.from({ length: peopleCount }, (_, i) => i + 1));
+        }
+    };
+
     return (
         <>
             <Modal visible={visible} animationType="slide" transparent>
@@ -174,7 +182,14 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                             </View>
 
                             <View style={styles.assignHeader}>
-                                <Text style={styles.assignLabel}>Assign to:</Text>
+                                <View style={styles.assignLabelContainer}>
+                                    <Text style={styles.assignLabel}>Assign to:</Text>
+                                    <TouchableOpacity onPress={toggleSelectAll}>
+                                        <Text style={styles.selectAllLink}>
+                                            {selectedPeople.length === peopleCount ? 'Deselect All' : 'Select All'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
                                 <TouchableOpacity onPress={() => setManageNamesVisible(true)}>
                                     <Text style={styles.editNamesLink}>Manage People</Text>
                                 </TouchableOpacity>
@@ -420,6 +435,16 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         color: Colors.textSecondary,
+    },
+    assignLabelContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    selectAllLink: {
+        fontSize: 14,
+        color: Colors.primary,
+        fontWeight: '600',
     },
     assignHeader: {
         flexDirection: 'row',
