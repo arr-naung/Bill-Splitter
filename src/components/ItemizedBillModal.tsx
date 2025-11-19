@@ -19,9 +19,12 @@ interface ItemizedBillModalProps {
     onClose: () => void;
     items: BillItem[];
     onAddItem: (name: string, price: number, assignedTo: number[]) => void;
+    onEditItem: (id: string, name: string, price: number, assignedTo: number[]) => void;
     onDeleteItem: (id: string) => void;
     peopleCount: number;
     onIncrementPeople: () => void;
+    onDecrementPeople: () => void;
+    onDeletePerson: (index: number) => void;
     peopleNames: Record<number, string>;
     onRenamePerson: (index: number, name: string) => void;
 }
@@ -31,15 +34,19 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
     onClose,
     items,
     onAddItem,
+    onEditItem,
     onDeleteItem,
     peopleCount,
     onIncrementPeople,
+    onDecrementPeople,
+    onDeletePerson,
     peopleNames,
     onRenamePerson,
 }) => {
     const [newItemName, setNewItemName] = useState('');
     const [newItemPrice, setNewItemPrice] = useState('');
     const [selectedPeople, setSelectedPeople] = useState<number[]>([]);
+    const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
     // Rename Modal State
     const [renameModalVisible, setRenameModalVisible] = useState(false);
@@ -65,10 +72,29 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
         const price = parseFloat(newItemPrice);
         if (isNaN(price) || price <= 0) return;
 
-        onAddItem(newItemName, price, selectedPeople);
+        if (editingItemId) {
+            onEditItem(editingItemId, newItemName, price, selectedPeople);
+            setEditingItemId(null);
+        } else {
+            onAddItem(newItemName, price, selectedPeople);
+        }
         setNewItemName('');
         setNewItemPrice('');
         setSelectedPeople([]);
+    };
+
+    const handleStartEdit = (item: BillItem) => {
+        setNewItemName(item.name);
+        setNewItemPrice(item.price.toString());
+        setSelectedPeople(item.assignedTo);
+        setEditingItemId(item.id);
+    };
+
+    const handleCancelEdit = () => {
+        setNewItemName('');
+        setNewItemPrice('');
+        setSelectedPeople([]);
+        setEditingItemId(null);
     };
 
     const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
@@ -110,6 +136,9 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                         </View>
                                         <View style={styles.itemRight}>
                                             <Text style={styles.itemPrice}>{formatCurrency(item.price)}</Text>
+                                            <TouchableOpacity onPress={() => handleStartEdit(item)}>
+                                                <MaterialIcons name="edit" size={24} color={Colors.primary} />
+                                            </TouchableOpacity>
                                             <TouchableOpacity onPress={() => onDeleteItem(item.id)}>
                                                 <MaterialIcons name="delete-outline" size={24} color={Colors.danger} />
                                             </TouchableOpacity>
@@ -120,7 +149,14 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                         </ScrollView>
 
                         <View style={styles.addItemSection}>
-                            <Text style={styles.sectionTitle}>Add New Item</Text>
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>{editingItemId ? 'Edit Item' : 'Add New Item'}</Text>
+                                {editingItemId && (
+                                    <TouchableOpacity onPress={handleCancelEdit}>
+                                        <Text style={styles.cancelEditText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                             <View style={styles.inputRow}>
                                 <TextInput
                                     style={styles.input}
@@ -140,7 +176,7 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                             <View style={styles.assignHeader}>
                                 <Text style={styles.assignLabel}>Assign to:</Text>
                                 <TouchableOpacity onPress={() => setManageNamesVisible(true)}>
-                                    <Text style={styles.editNamesLink}>Edit Names</Text>
+                                    <Text style={styles.editNamesLink}>Manage People</Text>
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.peopleSelectionRow}>
@@ -169,23 +205,26 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                         ))}
                                     </View>
                                 </View>
-                                <TouchableOpacity
-                                    style={styles.addPersonButton}
-                                    onPress={onIncrementPeople}
-                                >
-                                    <MaterialIcons name="person-add" size={20} color={Colors.primary} />
-                                </TouchableOpacity>
+                                <View style={styles.personControlButtons}>
+                                    <TouchableOpacity
+                                        style={styles.personActionButton}
+                                        onPress={onIncrementPeople}
+                                    >
+                                        <MaterialIcons name="person-add" size={20} color={Colors.primary} />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
 
                             <TouchableOpacity
                                 style={[
                                     styles.addButton,
                                     (!newItemName || !newItemPrice || selectedPeople.length === 0) && styles.addButtonDisabled,
+                                    editingItemId ? styles.updateButton : null,
                                 ]}
                                 onPress={handleAddItem}
                                 disabled={!newItemName || !newItemPrice || selectedPeople.length === 0}
                             >
-                                <Text style={styles.addButtonText}>Add Item</Text>
+                                <Text style={styles.addButtonText}>{editingItemId ? 'Update Item' : 'Add Item'}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -227,7 +266,7 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Edit Names</Text>
+                            <Text style={styles.modalTitle}>Manage People</Text>
                             <TouchableOpacity onPress={() => setManageNamesVisible(false)} style={styles.doneButton}>
                                 <Text style={styles.doneButtonText}>Done</Text>
                             </TouchableOpacity>
@@ -235,13 +274,25 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                         <ScrollView style={styles.itemsList}>
                             {Array.from({ length: peopleCount }, (_, i) => i + 1).map((personIndex) => (
                                 <View key={personIndex} style={styles.nameEditRow}>
-                                    <Text style={styles.nameEditLabel}>Person {personIndex}</Text>
-                                    <TextInput
-                                        style={styles.nameEditInput}
-                                        value={peopleNames[personIndex] || ''}
-                                        onChangeText={(text) => onRenamePerson(personIndex, text)}
-                                        placeholder={`Name for Person ${personIndex}`}
-                                    />
+                                    <View style={styles.nameEditInputContainer}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.nameEditLabel}>Person {personIndex}</Text>
+                                            <TextInput
+                                                style={styles.nameEditInput}
+                                                value={peopleNames[personIndex] || ''}
+                                                onChangeText={(text) => onRenamePerson(personIndex, text)}
+                                                placeholder={`Name for Person ${personIndex}`}
+                                            />
+                                        </View>
+                                        {peopleCount > 1 && (
+                                            <TouchableOpacity
+                                                onPress={() => onDeletePerson(personIndex)}
+                                                style={styles.deletePersonButton}
+                                            >
+                                                <MaterialIcons name="delete-outline" size={24} color={Colors.danger} />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
                                 </View>
                             ))}
                         </ScrollView>
@@ -338,8 +389,18 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        marginBottom: 12,
         color: Colors.textPrimary,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    cancelEditText: {
+        color: Colors.danger,
+        fontSize: 14,
+        fontWeight: '600',
     },
     inputRow: {
         flexDirection: 'column',
@@ -411,6 +472,9 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center',
     },
+    updateButton: {
+        backgroundColor: Colors.accent,
+    },
     addButtonDisabled: {
         backgroundColor: Colors.gray300,
     },
@@ -419,14 +483,18 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 16,
     },
-    addPersonButton: {
+    personControlButtons: {
+        flexDirection: 'row',
+        gap: 8,
+        marginLeft: 8,
+    },
+    personActionButton: {
         width: 40,
         height: 40,
         borderRadius: 20,
         backgroundColor: Colors.surface,
         borderWidth: 1,
-        borderColor: Colors.primary,
-        borderStyle: 'dashed',
+        borderColor: Colors.gray300,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -500,5 +568,14 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 12,
         fontSize: 16,
+    },
+    nameEditInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    deletePersonButton: {
+        padding: 8,
+        marginTop: 20, // Align with input
     },
 });

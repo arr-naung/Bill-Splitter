@@ -101,6 +101,39 @@ export const HomeScreen: React.FC = () => {
     setItems(items.filter((item) => item.id !== id));
   };
 
+  const handleEditItem = (id: string, name: string, price: number, assignedTo: number[]) => {
+    setItems(items.map((item) => (item.id === id ? { ...item, name, price, assignedTo } : item)));
+  };
+
+  const handleDeletePerson = (indexToDelete: number) => {
+    if (peopleCount <= 1) return;
+
+    // 1. Update People Count
+    setPeopleCount((prev) => prev - 1);
+
+    // 2. Update People Names (Shift keys down)
+    const newNames: Record<number, string> = {};
+    Object.keys(peopleNames).forEach((keyStr) => {
+      const key = parseInt(keyStr);
+      if (key < indexToDelete) {
+        newNames[key] = peopleNames[key];
+      } else if (key > indexToDelete) {
+        newNames[key - 1] = peopleNames[key];
+      }
+    });
+    setPeopleNames(newNames);
+
+    // 3. Update Items Assignments
+    const newItems = items.map((item) => {
+      const newAssignedTo = item.assignedTo
+        .filter((personIndex) => personIndex !== indexToDelete) // Remove deleted person
+        .map((personIndex) => (personIndex > indexToDelete ? personIndex - 1 : personIndex)); // Shift indices
+
+      return { ...item, assignedTo: newAssignedTo };
+    });
+    setItems(newItems);
+  };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -191,9 +224,12 @@ export const HomeScreen: React.FC = () => {
                 onClose={() => setModalVisible(false)}
                 items={items}
                 onAddItem={handleAddItem}
+                onEditItem={handleEditItem}
                 onDeleteItem={handleDeleteItem}
                 peopleCount={peopleCount}
                 onIncrementPeople={handleIncrementPeople}
+                onDecrementPeople={handleDecrementPeople}
+                onDeletePerson={handleDeletePerson}
                 peopleNames={peopleNames}
                 onRenamePerson={handleRenamePerson}
               />
