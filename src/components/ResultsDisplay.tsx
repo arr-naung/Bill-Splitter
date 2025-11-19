@@ -3,8 +3,9 @@
  * Renders calculated tip, total bill, and per-person amount
  */
 
+import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { PersonResult } from '../types';
 import { formatCurrency } from '../utils/Calculations';
@@ -26,8 +27,45 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   itemizedResults,
   peopleNames = {},
 }) => {
+  const handleShare = async () => {
+    try {
+      let message = `🧾 Bill Splitter Results\n\n`;
+      message += `💵 Bill: ${formatCurrency(billAmount)}\n`;
+      message += `✨ Tip: ${formatCurrency(tipAmount)}\n`;
+      message += `💰 Total: ${formatCurrency(totalBill)}\n\n`;
+
+      if (itemizedResults && itemizedResults.length > 0) {
+        message += `📋 Breakdown:\n`;
+        itemizedResults.forEach((person) => {
+          const name = peopleNames[person.personIndex] || `Person ${person.personIndex}`;
+          message += `${name}: ${formatCurrency(person.totalAmount)}\n`;
+        });
+      } else {
+        message += `👤 Per Person: ${formatCurrency(perPerson)}`;
+      }
+
+      await Share.share({
+        message,
+      });
+    } catch (error: any) {
+      Alert.alert(error.message);
+    }
+  };
+
   return (
     <View style={styles.mainResultCard}>
+      {/* Header with Share Button */}
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>Results</Text>
+        <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+          <Text style={styles.shareButtonText}>Share</Text>
+          <MaterialIcons name="share" size={16} color={Colors.white} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Header Divider */}
+      <View style={styles.headerDivider} />
+
       {/* Top Section: Bill, Tip, and Total */}
       <View style={styles.topSection}>
         <View style={styles.topRow}>
@@ -94,7 +132,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   topSection: {
-    paddingVertical: 16,
+    paddingBottom: 20,
     paddingHorizontal: 20,
   },
   topRow: {
@@ -175,5 +213,41 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 14,
     fontWeight: '700',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.white,
+    opacity: 0.8,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 20,
+  },
+  shareButtonText: {
+    color: Colors.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  headerDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    marginHorizontal: 20,
+    marginBottom: 16,
   },
 });

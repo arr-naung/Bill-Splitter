@@ -127,7 +127,6 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Edit Items</Text>
                             <View style={styles.headerRight}>
-                                <Text style={styles.modalSubtitle}>Total: {formatCurrency(totalAmount)}</Text>
                                 <View style={styles.headerButtons}>
                                     {items.length > 0 && (
                                         <TouchableOpacity onPress={() => {
@@ -153,6 +152,7 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                         <Text style={styles.doneButtonText}>Done</Text>
                                     </TouchableOpacity>
                                 </View>
+                                <Text style={styles.modalSubtitle}>Total: {formatCurrency(totalAmount)}</Text>
                             </View>
                         </View>
 
@@ -197,6 +197,7 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                     placeholder="Item Name (e.g. Pizza)"
                                     value={newItemName}
                                     onChangeText={setNewItemName}
+                                    placeholderTextColor="#999"
                                 />
                                 <TextInput
                                     style={styles.input}
@@ -204,6 +205,7 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                     value={newItemPrice}
                                     onChangeText={setNewItemPrice}
                                     keyboardType="decimal-pad"
+                                    placeholderTextColor="#999"
                                 />
                             </View>
 
@@ -323,6 +325,7 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                                 value={peopleNames[personIndex] || ''}
                                                 onChangeText={(text) => onRenamePerson(personIndex, text)}
                                                 placeholder={`Name for Person ${personIndex}`}
+                                                placeholderTextColor="#ccc"
                                             />
                                         </View>
                                         {peopleCount > 1 && (
@@ -372,7 +375,7 @@ const styles = StyleSheet.create({
     modalSubtitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: Colors.primary,
+        color: Colors.success,
     },
     doneButton: {
         padding: 8,
@@ -388,9 +391,9 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     headerRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 16,
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: 4,
     },
     clearButton: {
         padding: 8,
@@ -622,7 +625,8 @@ const styles = StyleSheet.create({
     },
     nameEditLabel: {
         fontSize: 14,
-        color: Colors.textSecondary,
+        color: Colors.textPrimary,
+        fontWeight: '600',
         marginBottom: 4,
     },
     nameEditInput: {

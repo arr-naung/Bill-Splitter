@@ -263,14 +263,6 @@ export const HomeScreen: React.FC = () => {
                 onRenamePerson={handleRenamePerson}
               />
             </View>
-
-            {/* Info Box */}
-            <View style={styles.infoBox}>
-              <Text style={styles.infoText}>
-                💡 Adjust the bill amount, tip percentage, and number of people
-                to see the split amount update in real-time.
-              </Text>
-            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
