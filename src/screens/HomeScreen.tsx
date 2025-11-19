@@ -4,6 +4,7 @@
  */
 
 import { MaterialIcons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import React, { useMemo, useState } from 'react';
 import {
   Alert,
@@ -165,6 +166,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="dark" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
@@ -187,86 +189,97 @@ export const HomeScreen: React.FC = () => {
 
           {/* Main Content */}
           <View style={styles.contentContainer}>
-            {/* Bill Input Section with Reset Button */}
-            <View style={styles.modeToggleContainer}>
-              <Text style={styles.modeLabel}>Itemized Splitting</Text>
+            {/* Segmented Control for Mode Selection */}
+            <View style={styles.segmentedControl}>
               <TouchableOpacity
-                style={[styles.toggleSwitch, isItemizedMode && styles.toggleSwitchActive]}
-                onPress={() => setIsItemizedMode(!isItemizedMode)}
+                style={[styles.segment, !isItemizedMode && styles.segmentActive]}
+                onPress={() => setIsItemizedMode(false)}
+                activeOpacity={0.7}
               >
-                <View style={[styles.toggleThumb, isItemizedMode && styles.toggleThumbActive]} />
+                <Text style={[styles.segmentText, !isItemizedMode && styles.segmentTextActive]}>
+                  Simple
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.segment, isItemizedMode && styles.segmentActive]}
+                onPress={() => setIsItemizedMode(true)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.segmentText, isItemizedMode && styles.segmentTextActive]}>
+                  Itemized
+                </Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.billInputRow}>
-              <View style={styles.billInputWrapper}>
-                {isItemizedMode ? (
-                  <TouchableOpacity
-                    style={styles.editItemsButton}
-                    onPress={() => setModalVisible(true)}
-                  >
-                    <Text style={styles.editItemsText}>
-                      {items.length} Items (Tap to Edit)
-                    </Text>
-                    <Text style={styles.editItemsTotal}>${billAmount || '0.00'}</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <BillInput
-                    value={billAmount}
-                    onChangeText={setBillAmount}
-                    placeholder="100.00"
-                  />
-                )}
+            {/* Input Card - Groups all inputs */}
+            <View style={styles.inputCard}>
+              <View style={styles.billInputRow}>
+                <View style={styles.billInputWrapper}>
+                  {isItemizedMode ? (
+                    <TouchableOpacity
+                      style={styles.editItemsButton}
+                      onPress={() => setModalVisible(true)}
+                    >
+                      <Text style={styles.editItemsText}>
+                        {items.length} Items (Tap to Edit)
+                      </Text>
+                      <Text style={styles.editItemsTotal}>${billAmount || '0.00'}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <BillInput
+                      value={billAmount}
+                      onChangeText={setBillAmount}
+                      placeholder="100.00"
+                    />
+                  )}
+                </View>
               </View>
+
+              {/* Tip Percentage Selector Section */}
+              <TipSelector
+                tipPercentage={tipPercentage}
+                onTipChange={setTipPercentage}
+              />
+
+              {/* People Counter Section */}
+              <PeopleCounter
+                count={peopleCount}
+                onIncrement={handleIncrementPeople}
+                onDecrement={handleDecrementPeople}
+              />
             </View>
-
-            {/* Tip Percentage Selector Section */}
-            <TipSelector
-              tipPercentage={tipPercentage}
-              onTipChange={setTipPercentage}
-            />
-
-            {/* People Counter Section */}
-            <PeopleCounter
-              count={peopleCount}
-              onIncrement={handleIncrementPeople}
-              onDecrement={handleDecrementPeople}
-            />
 
             {/* Results Display Section */}
             <View style={styles.resultsSection}>
-              {/* Results Display Section */}
-              <View style={styles.resultsSection}>
-                <ResultsDisplay
-                  billAmount={parseFloat(billAmount) || 0}
-                  tipAmount={results.tipAmount}
-                  totalBill={results.totalBill}
-                  perPerson={'perPerson' in results ? results.perPerson : 0}
-                  itemizedResults={'results' in results ? results.results : undefined}
-                  peopleNames={peopleNames}
-                />
-              </View>
-
-              <ItemizedBillModal
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                items={items}
-                onAddItem={handleAddItem}
-                onEditItem={handleEditItem}
-                onDeleteItem={handleDeleteItem}
-                onClearItems={handleClearItems}
-                peopleCount={peopleCount}
-                onIncrementPeople={handleIncrementPeople}
-                onDecrementPeople={handleDecrementPeople}
-                onDeletePerson={handleDeletePerson}
+              <ResultsDisplay
+                billAmount={parseFloat(billAmount) || 0}
+                tipAmount={results.tipAmount}
+                totalBill={results.totalBill}
+                perPerson={'perPerson' in results ? results.perPerson : 0}
+                itemizedResults={'results' in results ? results.results : undefined}
                 peopleNames={peopleNames}
-                onRenamePerson={handleRenamePerson}
               />
             </View>
+
+            <ItemizedBillModal
+              visible={modalVisible}
+              onClose={() => setModalVisible(false)}
+              items={items}
+              onAddItem={handleAddItem}
+              onEditItem={handleEditItem}
+              onDeleteItem={handleDeleteItem}
+              onClearItems={handleClearItems}
+              peopleCount={peopleCount}
+              onIncrementPeople={handleIncrementPeople}
+              onDecrementPeople={handleDecrementPeople}
+              onDeletePerson={handleDeletePerson}
+              peopleNames={peopleNames}
+              onRenamePerson={handleRenamePerson}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 };
 
@@ -333,6 +346,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.gray200,
   },
+  inputCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    gap: 16,
+  },
   modeLabel: {
     fontSize: 16,
     fontWeight: '600',
@@ -382,7 +406,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
     gap: 12,
   },
   billInputWrapper: {
@@ -396,12 +419,12 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    gap: 4,
+    gap: 20,
   },
   resultsSection: {
     width: '100%',
-    marginTop: 20,
-    marginBottom: 16,
+    marginTop: 24,
+    marginBottom: 20,
   },
   infoBox: {
     backgroundColor: Colors.infoLight,

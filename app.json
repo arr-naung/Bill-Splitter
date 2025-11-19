@@ -8,16 +8,45 @@
     "scheme": "billsplitter",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "owner": "arr-naung",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/936de3b8-5965-48d2-92f5-ad2027703146"
+    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.arrnaung.billsplitter"
+      "bundleIdentifier": "com.arrnaung.billsplitter",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "fetch",
+          "fetch"
+        ]
+      }
     },
     "android": {
       "package": "com.arrnaung.billsplitter",
-      "versionCode": 2,
-      "adaptiveIcon": {},
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "versionCode": 6,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "splash": {
+        "image": "./assets/images/logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff",
+        "dark": {
+          "backgroundColor": "#000000"
+        }
+      },
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ],
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "output": "static",
@@ -28,7 +57,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -45,15 +74,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9e1fc4ce-f1b7-462b-a7d6-31180c4bff26"
+        "projectId": "936de3b8-5965-48d2-92f5-ad2027703146"
       }
-    },
-    "owner": "arr-naung",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/9e1fc4ce-f1b7-462b-a7d6-31180c4bff26"
     }
   }
 }

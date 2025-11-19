@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
     Alert,
+    KeyboardAvoidingView,
     Modal,
     Platform,
     ScrollView,
@@ -9,7 +10,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { BillItem } from '../types';
@@ -122,7 +123,10 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
     return (
         <>
             <Modal visible={visible} animationType="slide" transparent>
-                <View style={styles.modalOverlay}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalOverlay}
+                >
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Edit Items</Text>
@@ -156,7 +160,12 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                             </View>
                         </View>
 
-                        <ScrollView style={styles.itemsList}>
+                        <ScrollView
+                            style={styles.itemsList}
+                            contentContainerStyle={styles.scrollContent}
+                            keyboardShouldPersistTaps="handled"
+                            showsVerticalScrollIndicator={false}
+                        >
                             {items.length === 0 ? (
                                 <Text style={styles.emptyText}>No items added yet.</Text>
                             ) : (
@@ -180,98 +189,99 @@ export const ItemizedBillModal: React.FC<ItemizedBillModalProps> = ({
                                     </View>
                                 ))
                             )}
-                        </ScrollView>
 
-                        <View style={styles.addItemSection}>
-                            <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>{editingItemId ? 'Edit Item' : 'Add New Item'}</Text>
-                                {editingItemId && (
-                                    <TouchableOpacity onPress={handleCancelEdit}>
-                                        <Text style={styles.cancelEditText}>Cancel</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                            <View style={styles.inputRow}>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Item Name (e.g. Pizza)"
-                                    value={newItemName}
-                                    onChangeText={setNewItemName}
-                                    placeholderTextColor="#999"
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Price"
-                                    value={newItemPrice}
-                                    onChangeText={setNewItemPrice}
-                                    keyboardType="decimal-pad"
-                                    placeholderTextColor="#999"
-                                />
-                            </View>
+                            {/* Add Item Section - Now inside ScrollView */}
+                            <View style={styles.addItemSection}>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitle}>{editingItemId ? 'Edit Item' : 'Add New Item'}</Text>
+                                    {editingItemId && (
+                                        <TouchableOpacity onPress={handleCancelEdit}>
+                                            <Text style={styles.cancelEditText}>Cancel</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                                <View style={styles.inputRow}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Item Name (e.g. Pizza)"
+                                        value={newItemName}
+                                        onChangeText={setNewItemName}
+                                        placeholderTextColor="#999"
+                                    />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Price"
+                                        value={newItemPrice}
+                                        onChangeText={setNewItemPrice}
+                                        keyboardType="decimal-pad"
+                                        placeholderTextColor="#999"
+                                    />
+                                </View>
 
-                            <View style={styles.assignHeader}>
-                                <View style={styles.assignLabelContainer}>
-                                    <Text style={styles.assignLabel}>Assign to:</Text>
-                                    <TouchableOpacity onPress={toggleSelectAll}>
-                                        <Text style={styles.selectAllLink}>
-                                            {selectedPeople.length === peopleCount ? 'Deselect All' : 'Select All'}
-                                        </Text>
+                                <View style={styles.assignHeader}>
+                                    <View style={styles.assignLabelContainer}>
+                                        <Text style={styles.assignLabel}>Assign to:</Text>
+                                        <TouchableOpacity onPress={toggleSelectAll}>
+                                            <Text style={styles.selectAllLink}>
+                                                {selectedPeople.length === peopleCount ? 'Deselect All' : 'Select All'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <TouchableOpacity onPress={() => setManageNamesVisible(true)}>
+                                        <Text style={styles.editNamesLink}>Manage People</Text>
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity onPress={() => setManageNamesVisible(true)}>
-                                    <Text style={styles.editNamesLink}>Manage People</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <View style={styles.peopleSelectionRow}>
-                                <View style={styles.peopleSelectorWrapper}>
-                                    <View style={styles.peopleSelectorContainer}>
-                                        {Array.from({ length: peopleCount }, (_, i) => i + 1).map((personIndex) => (
-                                            <TouchableOpacity
-                                                key={personIndex}
-                                                style={[
-                                                    styles.personChip,
-                                                    selectedPeople.includes(personIndex) && styles.personChipSelected,
-                                                ]}
-                                                onPress={() => togglePersonSelection(personIndex)}
-                                                onLongPress={() => handleOpenRename(personIndex)}
-                                                delayLongPress={500}
-                                            >
-                                                <Text
+                                <View style={styles.peopleSelectionRow}>
+                                    <View style={styles.peopleSelectorWrapper}>
+                                        <View style={styles.peopleSelectorContainer}>
+                                            {Array.from({ length: peopleCount }, (_, i) => i + 1).map((personIndex) => (
+                                                <TouchableOpacity
+                                                    key={personIndex}
                                                     style={[
-                                                        styles.personChipText,
-                                                        selectedPeople.includes(personIndex) && styles.personChipTextSelected,
+                                                        styles.personChip,
+                                                        selectedPeople.includes(personIndex) && styles.personChipSelected,
                                                     ]}
+                                                    onPress={() => togglePersonSelection(personIndex)}
+                                                    onLongPress={() => handleOpenRename(personIndex)}
+                                                    delayLongPress={500}
                                                 >
-                                                    {peopleNames[personIndex] || `P${personIndex}`}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        ))}
+                                                    <Text
+                                                        style={[
+                                                            styles.personChipText,
+                                                            selectedPeople.includes(personIndex) && styles.personChipTextSelected,
+                                                        ]}
+                                                    >
+                                                        {peopleNames[personIndex] || `P${personIndex}`}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </View>
+                                    <View style={styles.personControlButtons}>
+                                        <TouchableOpacity
+                                            style={styles.personActionButton}
+                                            onPress={onIncrementPeople}
+                                        >
+                                            <MaterialIcons name="person-add" size={20} color={Colors.primary} />
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
-                                <View style={styles.personControlButtons}>
-                                    <TouchableOpacity
-                                        style={styles.personActionButton}
-                                        onPress={onIncrementPeople}
-                                    >
-                                        <MaterialIcons name="person-add" size={20} color={Colors.primary} />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
 
-                            <TouchableOpacity
-                                style={[
-                                    styles.addButton,
-                                    (!newItemName || !newItemPrice || selectedPeople.length === 0) && styles.addButtonDisabled,
-                                    editingItemId ? styles.updateButton : null,
-                                ]}
-                                onPress={handleAddItem}
-                                disabled={!newItemName || !newItemPrice || selectedPeople.length === 0}
-                            >
-                                <Text style={styles.addButtonText}>{editingItemId ? 'Update Item' : 'Add Item'}</Text>
-                            </TouchableOpacity>
-                        </View>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.addButton,
+                                        (!newItemName || !newItemPrice || selectedPeople.length === 0) && styles.addButtonDisabled,
+                                        editingItemId ? styles.updateButton : null,
+                                    ]}
+                                    onPress={handleAddItem}
+                                    disabled={!newItemName || !newItemPrice || selectedPeople.length === 0}
+                                >
+                                    <Text style={styles.addButtonText}>{editingItemId ? 'Update Item' : 'Add Item'}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
                     </View>
-                </View>
+                </KeyboardAvoidingView>
             </Modal>
 
             {/* Rename Modal */}
@@ -400,7 +410,10 @@ const styles = StyleSheet.create({
     },
     itemsList: {
         flex: 1,
-        marginBottom: 20,
+    },
+    scrollContent: {
+        paddingBottom: 40,
+        flexGrow: 1,
     },
     emptyText: {
         textAlign: 'center',
@@ -439,9 +452,10 @@ const styles = StyleSheet.create({
         color: Colors.primary,
     },
     addItemSection: {
+        marginTop: 20,
+        paddingTop: 20,
         borderTopWidth: 1,
         borderTopColor: Colors.gray200,
-        paddingTop: 20,
     },
     sectionTitle: {
         fontSize: 16,
