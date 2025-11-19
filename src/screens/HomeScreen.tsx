@@ -334,17 +334,36 @@ const styles = StyleSheet.create({
   headerTextContainer: {
     flex: 1,
   },
-
-  modeToggleContainer: {
+  segmentedControl: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    backgroundColor: Colors.surface,
-    padding: 12,
+    backgroundColor: Colors.gray200,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
+    padding: 4,
+    marginBottom: 16,
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentActive: {
+    backgroundColor: Colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  segmentText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
+  segmentTextActive: {
+    color: Colors.primary,
   },
   inputCard: {
     backgroundColor: Colors.surface,
@@ -356,30 +375,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     gap: 16,
-  },
-  modeLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  toggleSwitch: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: Colors.gray300,
-    padding: 2,
-  },
-  toggleSwitchActive: {
-    backgroundColor: Colors.primary,
-  },
-  toggleThumb: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: Colors.white,
-  },
-  toggleThumbActive: {
-    alignSelf: 'flex-end',
   },
   editItemsButton: {
     backgroundColor: Colors.surface,
